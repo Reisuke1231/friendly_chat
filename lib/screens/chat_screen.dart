@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:friendly_chat/components/chat_message.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -8,14 +9,40 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final List<ChatMessage> _messages = [];
+  final FocusNode _focusNode = FocusNode();
   final _textController = TextEditingController();
+
+  void _handleSubmitted(String text) {
+    _textController.clear();
+    var message = ChatMessage(text: text);
+    setState(() {
+      _messages.insert(0, message);
+    });
+    _focusNode.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('FriendlyChat'),
+      appBar: AppBar(title: const Text('FriendlyChat')),
+      body: Column(
+        children: [
+          Flexible(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              reverse: true,
+              itemBuilder: (_, index) => _messages[index],
+              itemCount: _messages.length,
+            ),
+          ),
+          const Divider(height: 1.0),
+          Container(
+            decoration: BoxDecoration(color: Theme.of(context).cardColor),
+            child: _buildTextComposer(),
+          ),
+        ],
       ),
-      body: _buildTextComposer(),
     );
   }
 
@@ -47,9 +74,5 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
-  }
-
-  void _handleSubmitted(String text) {
-    _textController.clear();
   }
 }
