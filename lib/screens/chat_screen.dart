@@ -8,18 +8,25 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final List<ChatMessage> _messages = [];
   final FocusNode _focusNode = FocusNode();
   final _textController = TextEditingController();
 
   void _handleSubmitted(String text) {
     _textController.clear();
-    var message = ChatMessage(text: text);
+    var message = ChatMessage(
+      text: text,
+      animationController: AnimationController(
+        duration: const Duration(milliseconds: 300),
+        vsync: this,
+      ),
+    );
     setState(() {
       _messages.insert(0, message);
     });
     _focusNode.requestFocus();
+    message.animationController.forward();
   }
 
   @override
@@ -59,20 +66,27 @@ class _ChatScreenState extends State<ChatScreen> {
                 onSubmitted: _handleSubmitted,
                 decoration:
                     const InputDecoration.collapsed(hintText: 'Send a message'),
+                focusNode: _focusNode,
               ),
             ),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 4.0),
               child: IconButton(
                 icon: const Icon(Icons.send),
-                onPressed: () {
-                  _handleSubmitted(_textController.text);
-                },
+                onPressed: () => _handleSubmitted(_textController.text),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    for (var message in _messages) {
+      message.animationController.dispose();
+    }
+    super.dispose();
   }
 }
